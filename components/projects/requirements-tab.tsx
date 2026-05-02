@@ -115,7 +115,7 @@ export function RequirementsTab({ projectId }: { projectId: string }) {
             <DialogTrigger>
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">Add Requirement</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] bg-slate-900 text-white border-slate-800">
+            <DialogContent className="w-full sm:max-w-[500px] bg-slate-900 text-white border-slate-800">
               <DialogHeader>
                 <DialogTitle>New Requirement</DialogTitle>
               </DialogHeader>
@@ -171,7 +171,7 @@ export function RequirementsTab({ projectId }: { projectId: string }) {
 
       {/* Details Modal */}
       <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-        <DialogContent className="sm:max-w-[600px] bg-slate-900 text-white border-slate-800 max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-full sm:max-w-[600px] w-11/12 bg-slate-900 text-white border-slate-800 max-h-[80vh] overflow-y-auto">
           {selectedReq && (
             <>
               <DialogHeader>

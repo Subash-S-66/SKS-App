@@ -21,8 +21,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         await dbConnect()
 
-        // Make sure admin exists dynamically on first login attempt if missing
-        const adminExists = await User.findOne({ role: "admin" });
+        const adminExists = await User.findOne({ role: "admin" }).lean();
         if (!adminExists && credentials.username === "admin" && credentials.password === "SKSAdmin@2024") {
             const hashedPassword = await bcrypt.hash("SKSAdmin@2024", 12);
             await User.create({
@@ -39,7 +38,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             { email: credentials.username },
             { username: credentials.username }
           ]
-        })
+        }).select('+password').lean() as any
 
         if (!user || !user.password) {
           return null

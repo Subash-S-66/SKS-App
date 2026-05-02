@@ -42,7 +42,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">Settings</h2>
         <p className="text-muted-foreground text-slate-400">Manage your account settings and application preferences.</p>
       </div>
 

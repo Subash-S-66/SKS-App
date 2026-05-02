@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
@@ -28,6 +29,14 @@ export default function NewProjectPage() {
     sharePercentages: {
       bde: 20,
       developers: [] as number[]
+    },
+    // New Enhanced Fields
+    expectedDeliveryDate: "",
+    internalNotes: "",
+    isDemoRequired: false,
+    links: {
+      githubUrl: "",
+      finalUrl: ""
     }
   })
 
@@ -61,13 +70,11 @@ export default function NewProjectPage() {
         }
       }
 
-      // Auto calculate shares if not custom split
       let newDevShares: number[] = []
       if (!prev.customSplit) {
         if (newDevs.length === 1) newDevShares = [80]
         else if (newDevs.length === 2) newDevShares = [40, 40]
       } else {
-        // preserve custom shares or init
         newDevShares = prev.sharePercentages.developers.slice(0, newDevs.length)
         if (newDevShares.length < newDevs.length) {
             newDevShares.push(0)
@@ -109,14 +116,22 @@ export default function NewProjectPage() {
     }
 
     try {
+      const payload: any = {
+        ...formData,
+        projectBudget: Number(formData.projectBudget),
+        startDate: new Date(formData.startDate)
+      }
+
+      if (formData.expectedDeliveryDate) {
+        payload.expectedDeliveryDate = new Date(formData.expectedDeliveryDate)
+      } else {
+        delete payload.expectedDeliveryDate
+      }
+
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          projectBudget: Number(formData.projectBudget),
-          startDate: new Date(formData.startDate)
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (res.ok) {
@@ -135,13 +150,13 @@ export default function NewProjectPage() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
         <Link href="/projects">
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white min-h-[44px] min-w-[44px]">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Create New Project</h2>
-          <p className="text-muted-foreground text-slate-400">Add a new project and assign team members.</p>
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">Create New Project</h2>
+          <p className="text-muted-foreground text-slate-400 text-sm md:text-base">Add a new project and assign team members.</p>
         </div>
       </div>
 
@@ -162,7 +177,7 @@ export default function NewProjectPage() {
                 <Input id="typeOfJob" placeholder="e.g. Website, App, SEO" value={formData.typeOfJob} onChange={e => setFormData({...formData, typeOfJob: e.target.value})} required className="bg-slate-950 border-slate-800" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="projectBudget">Budget ($)</Label>
+                <Label htmlFor="projectBudget">Total Project Amount (₹)</Label>
                 <Input id="projectBudget" type="number" value={formData.projectBudget} onChange={e => setFormData({...formData, projectBudget: e.target.value})} required className="bg-slate-950 border-slate-800" />
               </div>
               <div className="space-y-2">
@@ -170,18 +185,60 @@ export default function NewProjectPage() {
                 <Input id="startDate" type="date" value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} required className="bg-slate-950 border-slate-800" />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="expectedDeliveryDate">Expected Delivery Date (Optional)</Label>
+                <Input id="expectedDeliveryDate" type="date" value={formData.expectedDeliveryDate} onChange={e => setFormData({...formData, expectedDeliveryDate: e.target.value})} className="bg-slate-950 border-slate-800" />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="monthForProject">Month for Project</Label>
                 <Input id="monthForProject" placeholder="e.g. May 2025" value={formData.monthForProject} onChange={e => setFormData({...formData, monthForProject: e.target.value})} required className="bg-slate-950 border-slate-800" />
+              </div>
+
+              <div className="space-y-2 flex flex-col justify-center">
+                <Label className="mb-2">Project Features</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isDemoRequired"
+                    checked={formData.isDemoRequired}
+                    onChange={(e) => setFormData({...formData, isDemoRequired: e.target.checked})}
+                    className="rounded border-slate-800 bg-slate-900 w-4 h-4"
+                  />
+                  <Label htmlFor="isDemoRequired" className="text-sm cursor-pointer">Client Demo Required?</Label>
+                </div>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label>Internal Notes / Description</Label>
+                <Textarea
+                  value={formData.internalNotes}
+                  onChange={e => setFormData({...formData, internalNotes: e.target.value})}
+                  placeholder="Admin only internal notes..."
+                  className="bg-slate-950 border-slate-800 min-h-[80px]"
+                />
+              </div>
+
+              <div className="space-y-4 md:col-span-2 border-t border-slate-800 pt-6">
+                <h3 className="text-lg font-medium">Quick Links</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>GitHub URL (Optional)</Label>
+                    <Input value={formData.links.githubUrl} onChange={e => setFormData({...formData, links: {...formData.links, githubUrl: e.target.value}})} className="bg-slate-950 border-slate-800" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Final/Live URL (Optional)</Label>
+                    <Input value={formData.links.finalUrl} onChange={e => setFormData({...formData, links: {...formData.links, finalUrl: e.target.value}})} className="bg-slate-950 border-slate-800" />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4 md:col-span-2 border-t border-slate-800 pt-6">
                 <h3 className="text-lg font-medium">Team Assignment & Shares</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
                     <Label>Assign BDE</Label>
                     <Select value={formData.assignedBDE} onValueChange={(val) => setFormData({...formData, assignedBDE: val || ""})}>
-                      <SelectTrigger className="bg-slate-950 border-slate-800">
+                      <SelectTrigger className="bg-slate-950 border-slate-800 min-h-[44px]">
                         <SelectValue placeholder="Select BDE" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-900 border-slate-800 text-white">
@@ -200,7 +257,7 @@ export default function NewProjectPage() {
                           key={dev._id}
                           type="button"
                           variant={formData.assignedDevelopers.includes(dev._id) ? "default" : "outline"}
-                          className={`text-sm ${formData.assignedDevelopers.includes(dev._id) ? "bg-blue-600 hover:bg-blue-700 text-white" : "border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 hover:text-white"}`}
+                          className={`text-sm min-h-[44px] ${formData.assignedDevelopers.includes(dev._id) ? "bg-blue-600 hover:bg-blue-700 text-white" : "border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 hover:text-white"}`}
                           onClick={() => handleDeveloperSelect(dev._id)}
                         >
                           {dev.name}
@@ -219,13 +276,13 @@ export default function NewProjectPage() {
                         id="customSplit"
                         checked={formData.customSplit}
                         onChange={(e) => handleCustomSplitChange(e.target.checked)}
-                        className="rounded border-slate-800 bg-slate-900"
+                        className="rounded border-slate-800 bg-slate-900 w-4 h-4"
                       />
                       <Label htmlFor="customSplit" className="text-sm text-slate-400 font-normal cursor-pointer">Custom Split</Label>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {formData.assignedBDE && (
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-400">BDE Share (%)</Label>
@@ -237,12 +294,12 @@ export default function NewProjectPage() {
                             ...formData,
                             sharePercentages: { ...formData.sharePercentages, bde: Number(e.target.value) }
                           })}
-                          className="bg-slate-900 border-slate-800 h-8"
+                          className="bg-slate-900 border-slate-800 h-10"
                         />
                       </div>
                     )}
 
-                    {formData.assignedDevelopers.map((devId, index) => {
+                    {formData.assignedDevelopers.map((devId: any, index: number) => {
                       const dev = developers.find(d => d._id === devId)
                       return (
                         <div key={devId} className="space-y-1">
@@ -259,7 +316,7 @@ export default function NewProjectPage() {
                                 sharePercentages: { ...formData.sharePercentages, developers: newShares }
                               })
                             }}
-                            className="bg-slate-900 border-slate-800 h-8"
+                            className="bg-slate-900 border-slate-800 h-10"
                           />
                         </div>
                       )
@@ -281,7 +338,7 @@ export default function NewProjectPage() {
             </div>
 
             <div className="flex justify-end pt-4 border-t border-slate-800">
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-8">Create Project</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-8 min-h-[44px] w-full md:w-auto">Create Project</Button>
             </div>
           </form>
         </CardContent>

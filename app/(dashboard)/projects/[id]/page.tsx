@@ -11,7 +11,11 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { RequirementsTab } from "@/components/projects/requirements-tab"
 import { CredentialsTab } from "@/components/projects/credentials-tab"
+import { LinksSection } from "@/components/projects/links-section"
 import { TeamTab } from "@/components/projects/team-tab"
+import { PaymentsTab } from "@/components/projects/payments-tab"
+import { DemosTab } from "@/components/projects/demos-tab"
+import { ActivityTab } from "@/components/projects/activity-tab"
 
 export default function ProjectDetailsPage() {
   const { id } = useParams()
@@ -41,9 +45,6 @@ export default function ProjectDetailsPage() {
   if (loading) return <div className="text-slate-400 p-8">Loading project details...</div>
   if (!project) return <div className="text-slate-400 p-8">Project not found or access denied.</div>
 
-  const isDeveloper = session?.user?.role === "developer"
-  const isBDE = session?.user?.role === "bde"
-
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
@@ -54,7 +55,7 @@ export default function ProjectDetailsPage() {
         </Link>
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight">{project.clientName}</h2>
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">{project.clientName}</h2>
             <Badge variant="outline" className={`
               ${project.status === 'completed' ? 'border-green-500 text-green-400' : ''}
               ${project.status === 'ongoing' ? 'border-blue-500 text-blue-400' : ''}
@@ -63,16 +64,19 @@ export default function ProjectDetailsPage() {
               {project.status.toUpperCase()}
             </Badge>
           </div>
-          <p className="text-muted-foreground text-slate-400">{project.companyName} • {project.typeOfJob}</p>
+          <p className="text-muted-foreground text-slate-400 text-sm md:text-base">{project.companyName} • {project.typeOfJob}</p>
         </div>
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-slate-900 border border-slate-800 p-1 rounded-lg w-full justify-start overflow-x-auto">
+        <TabsList className="bg-slate-900 border border-slate-800 p-1 rounded-lg w-full justify-start overflow-x-auto flex flex-nowrap whitespace-nowrap scrollbar-hide">
           <TabsTrigger value="overview" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white text-slate-400">Overview</TabsTrigger>
           <TabsTrigger value="requirements" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white text-slate-400">Requirements</TabsTrigger>
           <TabsTrigger value="credentials" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white text-slate-400">Credentials</TabsTrigger>
           <TabsTrigger value="team" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white text-slate-400">Team & Shares</TabsTrigger>
+          <TabsTrigger value="demos" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white text-slate-400">Demos</TabsTrigger>
+          <TabsTrigger value="payments" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white text-slate-400">Payments</TabsTrigger>
+          <TabsTrigger value="activity" className="data-[state=active]:bg-slate-800 data-[state=active]:text-white text-slate-400">Activity</TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
@@ -80,11 +84,11 @@ export default function ProjectDetailsPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card className="bg-slate-900 border-slate-800 text-white">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-400">Budget</CardTitle>
+                  <CardTitle className="text-sm font-medium text-slate-400">Total Budget</CardTitle>
                   <DollarSign className="h-4 w-4 text-emerald-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${project.projectBudget}</div>
+                  <div className="text-2xl font-bold">₹{project.projectBudget?.toLocaleString() || 0}</div>
                 </CardContent>
               </Card>
               <Card className="bg-slate-900 border-slate-800 text-white">
@@ -112,7 +116,7 @@ export default function ProjectDetailsPage() {
                 <CardTitle>Project Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
                     <span className="text-slate-400 text-sm block">System ID</span>
                     <span className="font-mono">#{project.sNo}</span>
@@ -121,7 +125,25 @@ export default function ProjectDetailsPage() {
                     <span className="text-slate-400 text-sm block">Type</span>
                     <span>{project.typeOfJob}</span>
                   </div>
+                  {project.expectedDeliveryDate && (
+                    <div>
+                        <span className="text-slate-400 text-sm block">Expected Delivery</span>
+                        <span>{new Date(project.expectedDeliveryDate).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  {project.isDemoRequired && (
+                    <div>
+                        <span className="text-slate-400 text-sm block">Demo Status</span>
+                        <Badge variant="outline" className="border-blue-500 text-blue-400 mt-1">Demo Required</Badge>
+                    </div>
+                  )}
                 </div>
+                {project.internalNotes && (
+                  <div className="pt-4 border-t border-slate-800 mt-4">
+                    <span className="text-slate-400 text-sm block mb-1">Internal Notes</span>
+                    <div className="bg-slate-950 p-3 rounded text-sm text-slate-300">{project.internalNotes}</div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -132,10 +154,23 @@ export default function ProjectDetailsPage() {
 
           <TabsContent value="credentials" className="m-0">
              <CredentialsTab projectId={id as string} />
+             <LinksSection project={project} onUpdate={(p) => setProject(p)} />
           </TabsContent>
 
           <TabsContent value="team" className="m-0 space-y-6">
             <TeamTab project={project} onUpdate={(p) => setProject(p)} />
+          </TabsContent>
+
+          <TabsContent value="demos" className="m-0">
+            <DemosTab project={project} onUpdate={(p) => setProject(p)} />
+          </TabsContent>
+
+          <TabsContent value="payments" className="m-0">
+            <PaymentsTab project={project} onUpdate={(p) => setProject(p)} />
+          </TabsContent>
+
+          <TabsContent value="activity" className="m-0">
+            <ActivityTab projectId={id as string} />
           </TabsContent>
         </div>
       </Tabs>

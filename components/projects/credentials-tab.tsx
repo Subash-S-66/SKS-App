@@ -130,7 +130,7 @@ export function CredentialsTab({ projectId }: { projectId: string }) {
                 {credentials ? "Edit Credentials" : "Add Credentials"}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[700px] bg-slate-900 text-white border-slate-800 max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-full sm:max-w-[700px] w-11/12 bg-slate-900 text-white border-slate-800 max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{credentials ? "Edit" : "Add"} Project Credentials</DialogTitle>
               </DialogHeader>

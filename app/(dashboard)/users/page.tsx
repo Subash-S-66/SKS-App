@@ -73,14 +73,14 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Users</h2>
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">Users</h2>
           <p className="text-muted-foreground text-slate-400">Manage team members and their roles.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger>
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">Add User</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] bg-slate-900 text-white border-slate-800">
+          <DialogContent className="w-full sm:max-w-[425px] bg-slate-900 text-white border-slate-800">
             <DialogHeader>
               <DialogTitle>Create New User</DialogTitle>
             </DialogHeader>

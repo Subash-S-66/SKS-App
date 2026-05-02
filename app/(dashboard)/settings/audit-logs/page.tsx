@@ -52,7 +52,7 @@ export default function AuditLogsPage() {
           </Button>
         </Link>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Audit Logs</h2>
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">Audit Logs</h2>
           <p className="text-muted-foreground text-slate-400">Security history and credential access logs.</p>
         </div>
       </div>
