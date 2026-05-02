@@ -1,0 +1,84 @@
+import NextAuth from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
+import dbConnect from "./db"
+import { User } from "../models/User"
+import bcrypt from "bcryptjs"
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Username / Email", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          return null
+        }
+
+        await dbConnect()
+
+        // Make sure admin exists dynamically on first login attempt if missing
+        const adminExists = await User.findOne({ role: "admin" });
+        if (!adminExists && credentials.username === "admin" && credentials.password === "SKSAdmin@2024") {
+            const hashedPassword = await bcrypt.hash("SKSAdmin@2024", 12);
+            await User.create({
+              name: "SKS Admin",
+              username: "admin",
+              email: "admin@sksagency.com",
+              password: hashedPassword,
+              role: "admin",
+            });
+        }
+
+        const user = await User.findOne({
+          $or: [
+            { email: credentials.username },
+            { username: credentials.username }
+          ]
+        })
+
+        if (!user || !user.password) {
+          return null
+        }
+
+        const isValid = await bcrypt.compare(credentials.password as string, user.password)
+
+        if (!isValid) {
+          return null
+        }
+
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        }
+      }
+    })
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role as string
+        token.id = user.id as string
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.role = token.role as string
+        session.user.id = token.id as string
+      }
+      return session
+    }
+  },
+  pages: {
+    signIn: '/login',
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 8 * 60 * 60, // 8 hours
+  },
+})
