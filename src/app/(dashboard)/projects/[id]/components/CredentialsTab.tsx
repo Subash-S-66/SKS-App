@@ -1,0 +1,334 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { Eye, Plus, ShieldAlert, Pencil, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
+
+export default function CredentialsTab({ projectId }: { projectId: string }) {
+  const { data: session } = useSession();
+  const role = (session?.user as any)?.role;
+
+  const [credentials, setCredentials] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, string>>({});
+
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedCredId, setSelectedCredId] = useState("");
+
+  const [type, setType] = useState("gmail");
+  const [formData, setFormData] = useState({
+    label: "",
+    username: "",
+    password: "",
+    provider: "",
+    startDate: "",
+    freeDays: "0",
+    customDomain: false,
+    domainName: "",
+  });
+
+  useEffect(() => {
+    fetchCredentials();
+  }, [projectId]);
+
+  const fetchCredentials = async () => {
+    try {
+      const res = await fetch(`/api/credentials?projectId=${projectId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCredentials(data);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const revealPassword = async (id: string) => {
+    if (revealedPasswords[id]) {
+      const newRevealed = { ...revealedPasswords };
+      delete newRevealed[id];
+      setRevealedPasswords(newRevealed);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/credentials/${id}/reveal`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setRevealedPasswords({ ...revealedPasswords, [id]: data.password });
+        toast.success("Access logged");
+      } else {
+        toast.error("Failed to reveal password");
+      }
+    } catch {
+      toast.error("Error revealing password");
+    }
+  };
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, type, ...formData, freeDays: Number(formData.freeDays) }),
+      });
+      if (res.ok) {
+        toast.success("Credential added securely");
+        setIsAddOpen(false);
+        resetForm();
+        fetchCredentials();
+      } else {
+        toast.error("Failed to add credential");
+      }
+    } catch {
+      toast.error("Error adding credential");
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const bodyPayload = { type, ...formData, freeDays: Number(formData.freeDays) };
+      // if password is empty, don't send it to preserve existing
+      if (!bodyPayload.password) {
+        delete (bodyPayload as any).password;
+      }
+
+      const res = await fetch(`/api/credentials/${selectedCredId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyPayload),
+      });
+
+      if (res.ok) {
+        toast.success("Credential updated");
+        setIsEditOpen(false);
+        resetForm();
+        fetchCredentials();
+      } else {
+        toast.error("Failed to update credential");
+      }
+    } catch {
+      toast.error("Error updating credential");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this credential?")) return;
+    try {
+      const res = await fetch(`/api/credentials/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Credential deleted");
+        fetchCredentials();
+      } else {
+        toast.error("Failed to delete credential");
+      }
+    } catch {
+      toast.error("Error deleting credential");
+    }
+  };
+
+  const resetForm = () => {
+    setType("gmail");
+    setFormData({
+      label: "", username: "", password: "", provider: "", startDate: "", freeDays: "0", customDomain: false, domainName: ""
+    });
+  };
+
+  const openEditModal = (cred: any) => {
+    setSelectedCredId(cred._id);
+    setType(cred.type);
+    setFormData({
+      label: cred.label || "",
+      username: cred.username || "",
+      password: "", // empty so it won't overwrite unless typed
+      provider: cred.provider || "",
+      startDate: cred.startDate ? new Date(cred.startDate).toISOString().split("T")[0] : "",
+      freeDays: cred.freeDays?.toString() || "0",
+      customDomain: cred.customDomain || false,
+      domainName: cred.domainName || "",
+    });
+    setIsEditOpen(true);
+  };
+
+  const renderCardDetails = (cred: any) => {
+    if (cred.type === "hosting") {
+      let daysLeftText = "";
+      let colorType = "default";
+      if (cred.expiryDate) {
+        const diffTime = new Date(cred.expiryDate).getTime() - new Date().getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        daysLeftText = diffDays > 0 ? `${diffDays} days left` : "Expired";
+        colorType = diffDays > 30 ? "success" : diffDays > 10 ? "warning" : "danger";
+      }
+
+      return (
+        <>
+          <p className="text-sm"><span className="text-muted-foreground">Provider:</span> {cred.provider}</p>
+          {cred.expiryDate && (
+            <div className="mt-2">
+              <Badge variant={colorType as any}>{daysLeftText}</Badge>
+            </div>
+          )}
+          {cred.customDomain && (
+            <Badge variant="outline" className="mt-2 ml-2">Custom Domain: {cred.domainName}</Badge>
+          )}
+        </>
+      );
+    }
+    return null;
+  };
+
+  const formFields = (isEdit: boolean) => (
+    <>
+      <div className="space-y-2">
+        <Label>Type</Label>
+        <select
+          className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          value={type} onChange={(e) => setType(e.target.value)}
+        >
+          <option value="gmail">Gmail</option>
+          <option value="hosting">Hosting</option>
+          <option value="domain">Domain</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div className="space-y-2">
+        <Label>Label (Optional)</Label>
+        <Input value={formData.label} onChange={(e) => setFormData({...formData, label: e.target.value})} placeholder="e.g. Production DB" />
+      </div>
+      <div className="space-y-2">
+        <Label>Username / Email</Label>
+        <Input value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})} />
+      </div>
+      <div className="space-y-2">
+        <Label>Password {isEdit && <span className="text-muted-foreground text-xs">(Leave blank to keep unchanged)</span>}</Label>
+        <Input type="password" required={!isEdit} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} />
+        <p className="text-xs text-muted-foreground">Will be encrypted using AES-256 before storage.</p>
+      </div>
+
+      {type === "hosting" && (
+        <>
+          <div className="space-y-2">
+            <Label>Provider (e.g. Vercel, AWS)</Label>
+            <Input value={formData.provider} onChange={(e) => setFormData({...formData, provider: e.target.value})} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
+              <Label>Start Date</Label>
+              <Input type="date" value={formData.startDate} onChange={(e) => setFormData({...formData, startDate: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label>Free Days</Label>
+              <Input type="number" value={formData.freeDays} onChange={(e) => setFormData({...formData, freeDays: e.target.value})} />
+            </div>
+          </div>
+          <div className="space-y-2 pt-2 flex items-center space-x-2">
+            <input type="checkbox" id={`customDomain-${isEdit}`} checked={formData.customDomain} onChange={(e) => setFormData({...formData, customDomain: e.target.checked})} />
+            <Label htmlFor={`customDomain-${isEdit}`}>Uses Custom Domain</Label>
+          </div>
+          {formData.customDomain && (
+            <div className="space-y-2">
+              <Label>Domain Name</Label>
+              <Input value={formData.domainName} onChange={(e) => setFormData({...formData, domainName: e.target.value})} />
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h3 className="text-xl font-semibold">Secure Credentials</h3>
+          <p className="text-sm text-muted-foreground flex items-center mt-1">
+            <ShieldAlert className="h-4 w-4 mr-1 text-warning" /> Password reveals are tracked in the audit log.
+          </p>
+        </div>
+        {role === "admin" && (
+          <Button onClick={() => { resetForm(); setIsAddOpen(true); }} size="sm">
+            <Plus className="h-4 w-4 mr-2" /> Add Credential
+          </Button>
+        )}
+      </div>
+
+      {loading ? (
+        <div>Loading...</div>
+      ) : credentials.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">No credentials stored yet.</CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {credentials.map((cred) => (
+            <Card key={cred._id}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg capitalize flex items-center justify-between">
+                  <span>{cred.label || cred.type}</span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{cred.type}</Badge>
+                    {role === "admin" && (
+                      <>
+                        <button onClick={() => openEditModal(cred)} className="text-muted-foreground hover:text-white transition-colors">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(cred._id)} className="text-muted-foreground hover:text-danger transition-colors">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-sm"><span className="text-muted-foreground">Username:</span> {cred.username || "N/A"}</p>
+                <div className="flex items-center justify-between bg-background p-2 rounded border border-border">
+                  <span className="font-mono text-sm tracking-wider">
+                    {revealedPasswords[cred._id] || "••••••••"}
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={() => revealPassword(cred._id)} className="h-6 px-2 text-xs">
+                    <Eye className="h-3 w-3 mr-1" /> {revealedPasswords[cred._id] ? "Hide" : "Reveal"}
+                  </Button>
+                </div>
+                {renderCardDetails(cred)}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Add Modal */}
+      <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add Secure Credential">
+        <form onSubmit={handleAdd} className="space-y-4">
+          {formFields(false)}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+            <Button type="submit">Save Encrypted</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} title="Edit Credential">
+        <form onSubmit={handleEdit} className="space-y-4">
+          {formFields(true)}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+            <Button type="submit">Update Encrypted</Button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}
