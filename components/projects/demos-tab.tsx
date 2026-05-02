@@ -83,11 +83,12 @@ export function DemosTab({ project, onUpdate }: { project: any, onUpdate: (p: an
                         Record Demo
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="w-full sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-slate-900 text-white border-slate-800">
+                <DialogContent className="w-full sm:max-w-[600px]  bg-slate-900 text-white border-slate-800">
                     <DialogHeader>
                         <DialogTitle>Record Demo Session</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+                    <div className="max-h-[70vh] overflow-y-auto px-1">
+                        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Demo Date</Label>
@@ -133,6 +134,7 @@ export function DemosTab({ project, onUpdate }: { project: any, onUpdate: (p: an
                         </div>
                         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 min-h-[44px]">Save Demo Record</Button>
                     </form>
+                    </div>
                 </DialogContent>
             </Dialog>
         )}

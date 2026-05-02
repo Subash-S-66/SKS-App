@@ -242,11 +242,17 @@ export default function NewProjectPage() {
                         <SelectValue placeholder="Select BDE" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                        <SelectItem value="none">None</SelectItem>
                         {bdes.map(bde => (
                           <SelectItem key={bde._id} value={bde._id}>{bde.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {bdes.length === 0 && (
+                      <div className="mt-2 text-sm text-yellow-500">
+                        No BDEs available. <Link href="/users" className="underline">Create one here</Link>.
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">

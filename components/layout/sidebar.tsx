@@ -1,18 +1,30 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, FolderKanban, Users, Settings } from "lucide-react"
+import { LayoutDashboard, FolderKanban, Users, Settings, UserCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useSession } from "next-auth/react"
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
-  const links = [
+  const isAdmin = session?.user?.role === "admin"
+
+  const adminLinks = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/projects", icon: FolderKanban, label: "Projects" },
     { href: "/users", icon: Users, label: "Users" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ]
+
+  const userLinks = [
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/projects", icon: FolderKanban, label: "My Projects" },
+    { href: "/settings", icon: UserCircle, label: "Profile" },
+  ]
+
+  const links = isAdmin ? adminLinks : userLinks
 
   return (
     <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r border-slate-800 bg-slate-950 sm:flex">
@@ -28,7 +40,7 @@ export function Sidebar() {
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
           {links.map((link) => {
             const Icon = link.icon
-            const isActive = pathname.startsWith(link.href)
+            const isActive = pathname.startsWith(link.href) && link.href !== "/settings" || (pathname === "/settings" && link.href === "/settings")
             return (
               <Link
                 key={link.href}

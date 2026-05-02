@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     user.password = await bcrypt.hash(newPassword, 12)
+    user.needsPasswordChange = false;
     await user.save()
 
     return NextResponse.json({ message: "Password updated" })

@@ -30,6 +30,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               email: "admin@sksagency.com",
               password: hashedPassword,
               role: "admin",
+              needsPasswordChange: true
             });
         }
 
@@ -55,6 +56,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
+          needsPasswordChange: user.needsPasswordChange
         }
       }
     })
@@ -64,6 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = user.role as string
         token.id = user.id as string
+        token.needsPasswordChange = user.needsPasswordChange as boolean
       }
       return token
     },
@@ -71,6 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token && session.user) {
         session.user.role = token.role as string
         session.user.id = token.id as string
+        session.user.needsPasswordChange = token.needsPasswordChange as boolean
       }
       return session
     }

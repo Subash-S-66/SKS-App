@@ -1,11 +1,14 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IUser extends Document {
+  resetToken?: string;
+  resetTokenExpiry?: Date;
   name: string;
   username: string;
   email: string;
   password?: string;
   role: 'admin' | 'developer' | 'bde';
+  needsPasswordChange?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

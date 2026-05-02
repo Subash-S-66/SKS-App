@@ -52,7 +52,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 md:gap-8">
+    <div className="flex flex-1 flex-col gap-3 sm:gap-4 md:gap-8">
       {needsPasswordChange && (
         <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg flex items-center gap-3">
             <AlertTriangle className="h-5 w-5" />
@@ -68,14 +68,14 @@ export default async function DashboardPage() {
 
       <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">Dashboard</h1>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:gap-6 lg:grid-cols-4">
+      <div className="grid gap-2 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-slate-900 border-slate-800 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
             <FolderKanban className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalProjects}</div>
+            <div className="text-xl sm:text-2xl font-bold">{totalProjects}</div>
           </CardContent>
         </Card>
         <Card className="bg-slate-900 border-slate-800 text-white">
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
             <Clock className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{ongoingProjects}</div>
+            <div className="text-xl sm:text-2xl font-bold">{ongoingProjects}</div>
           </CardContent>
         </Card>
         <Card className="bg-slate-900 border-slate-800 text-white">
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedProjects}</div>
+            <div className="text-xl sm:text-2xl font-bold">{completedProjects}</div>
           </CardContent>
         </Card>
 
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
                 <Users className="h-4 w-4 text-indigo-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalUsers}</div>
+                <div className="text-xl sm:text-2xl font-bold">{totalUsers}</div>
               </CardContent>
             </Card>
             <Card className="bg-slate-900 border-slate-800 text-white">
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
                 <Briefcase className="h-4 w-4 text-purple-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalBDEs}</div>
+                <div className="text-xl sm:text-2xl font-bold">{totalBDEs}</div>
               </CardContent>
             </Card>
             <Card className="bg-slate-900 border-slate-800 text-white">
@@ -123,7 +123,7 @@ export default async function DashboardPage() {
                 <UserCheck className="h-4 w-4 text-pink-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalDevelopers}</div>
+                <div className="text-xl sm:text-2xl font-bold">{totalDevelopers}</div>
               </CardContent>
             </Card>
           </>

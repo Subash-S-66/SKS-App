@@ -119,6 +119,7 @@ export function RequirementsTab({ projectId }: { projectId: string }) {
               <DialogHeader>
                 <DialogTitle>New Requirement</DialogTitle>
               </DialogHeader>
+              <div className="max-h-[70vh] overflow-y-auto px-1">
               <form onSubmit={handleCreate} className="space-y-4 pt-4">
                 <div className="space-y-2">
                   <Label htmlFor="title">Title</Label>
@@ -130,6 +131,7 @@ export function RequirementsTab({ projectId }: { projectId: string }) {
                 </div>
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Add Requirement</Button>
               </form>
+              </div>
             </DialogContent>
           </Dialog>
         )}
@@ -171,7 +173,7 @@ export function RequirementsTab({ projectId }: { projectId: string }) {
 
       {/* Details Modal */}
       <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-        <DialogContent className="w-full sm:max-w-[600px] w-11/12 bg-slate-900 text-white border-slate-800 max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-full sm:max-w-[600px] w-11/12 bg-slate-900 text-white border-slate-800 ">
           {selectedReq && (
             <>
               <DialogHeader>
@@ -187,7 +189,7 @@ export function RequirementsTab({ projectId }: { projectId: string }) {
                 </div>
               </DialogHeader>
 
-              <div className="space-y-6 pt-4">
+              <div className="max-h-[70vh] overflow-y-auto px-1 space-y-6 pt-4">
                 <div>
                   <h4 className="text-sm font-medium text-slate-400 mb-2">Description</h4>
                   <p className="text-sm bg-slate-950 p-4 rounded-md border border-slate-800 whitespace-pre-wrap">{selectedReq.description}</p>

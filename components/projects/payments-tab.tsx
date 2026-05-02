@@ -242,6 +242,7 @@ export function PaymentsTab({ project, onUpdate }: { project: any, onUpdate: (p:
                             <DialogHeader>
                                 <DialogTitle>Record Payment Received</DialogTitle>
                             </DialogHeader>
+                            <div className="max-h-[70vh] overflow-y-auto px-1">
                             <form onSubmit={handleAddPayment} className="space-y-4 pt-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
@@ -279,6 +280,7 @@ export function PaymentsTab({ project, onUpdate }: { project: any, onUpdate: (p:
                                 </div>
                                 <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">Save Payment</Button>
                             </form>
+                            </div>
                         </DialogContent>
                     </Dialog>
                 )}

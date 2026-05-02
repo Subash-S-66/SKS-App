@@ -130,10 +130,11 @@ export function CredentialsTab({ projectId }: { projectId: string }) {
                 {credentials ? "Edit Credentials" : "Add Credentials"}
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-full sm:max-w-[700px] w-11/12 bg-slate-900 text-white border-slate-800 max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-full sm:max-w-[700px] w-11/12 bg-slate-900 text-white border-slate-800 ">
               <DialogHeader>
                 <DialogTitle>{credentials ? "Edit" : "Add"} Project Credentials</DialogTitle>
               </DialogHeader>
+              <div className="max-h-[70vh] overflow-y-auto px-1">
               <form onSubmit={handleSave} className="space-y-6 pt-4">
                 {/* Form fields for Admin */}
                 <div className="grid grid-cols-2 gap-4">
@@ -180,6 +181,7 @@ export function CredentialsTab({ projectId }: { projectId: string }) {
 
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Save Credentials</Button>
               </form>
+              </div>
             </DialogContent>
           </Dialog>
         )}

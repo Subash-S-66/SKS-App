@@ -7,12 +7,14 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import { useSession } from "next-auth/react"
 
-export function Header({ role = "developer" }: { role?: string }) {
+export function Header({ role }: { role?: string }) {
   const pathname = usePathname()
+  const { data: session } = useSession()
   const [open, setOpen] = useState(false)
 
-  const isAdmin = role === "admin"
+  const isAdmin = session?.user?.role === "admin"
 
   const adminLinks = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -58,7 +60,7 @@ export function Header({ role = "developer" }: { role?: string }) {
               <div className="grid items-start px-2 text-sm font-medium">
                 {links.map((link) => {
                   const Icon = link.icon
-                  const isActive = pathname.startsWith(link.href)
+                  const isActive = pathname.startsWith(link.href) && link.href !== "/settings" || (pathname === "/settings" && link.href === "/settings")
                   return (
                     <Link
                       key={link.href}
@@ -80,7 +82,7 @@ export function Header({ role = "developer" }: { role?: string }) {
         </Sheet>
       </div>
 
-      <div className={`flex-1 flex sm:hidden ${isAdmin ? "justify-center mr-8" : "items-center"}`}>
+      <div className="flex-1 flex sm:hidden justify-center mr-8">
          <Link href="/" className="flex items-center gap-2 font-bold text-lg text-white">
             <div className="h-7 w-7 bg-blue-600 rounded-md flex items-center justify-center text-white text-xs">
               SKS
@@ -88,40 +90,9 @@ export function Header({ role = "developer" }: { role?: string }) {
           </Link>
       </div>
 
-      {/* Top Nav for non-admins on desktop */}
-      {!isAdmin && (
-        <div className="hidden sm:flex flex-1 items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-white mr-4">
-            <div className="h-8 w-8 bg-blue-600 rounded-md flex items-center justify-center text-white">
-              SKS
-            </div>
-          </Link>
-          <nav className="flex items-center gap-6 text-sm font-medium">
-            {userLinks.map(link => {
-              const Icon = link.icon
-              const isActive = pathname.startsWith(link.href) && link.href !== "/settings" || (pathname === "/settings" && link.href === "/settings")
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "flex items-center gap-2 transition-colors hover:text-blue-400",
-                    isActive ? "text-blue-400" : "text-slate-400"
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
-      )}
+      <div className="hidden sm:flex flex-1 items-center justify-end gap-4"></div>
 
-      {/* Spacer for admin desktop */}
-      {isAdmin && <div className="hidden sm:flex flex-1 items-center justify-end gap-4"></div>}
-
-      <div className={`flex items-center gap-4 ${!isAdmin && "hidden sm:flex"}`}>
+      <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:text-white min-h-[44px] min-w-[44px]" onClick={() => signOut()}>
           <LogOut className="h-5 w-5" />
           <span className="sr-only">Log out</span>

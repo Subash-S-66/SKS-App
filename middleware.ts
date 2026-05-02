@@ -1,19 +1,27 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
-// Mongoose doesn't work in Edge Runtime which middleware uses.
-// Instead of using the full auth wrapper here which pulls in DB logic,
-// we will just check the session cookie directly for minimal edge auth.
-
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const isAuthPage = request.nextUrl.pathname.startsWith('/login')
   const isApiAuthRoute = request.nextUrl.pathname.startsWith('/api/auth')
   const isPublicRoute = isApiAuthRoute
 
-  // In NextAuth v5, the session token cookie name depends on secure context
-  const token = request.cookies.get('authjs.session-token') || request.cookies.get('__Secure-authjs.session-token') || request.cookies.get('next-auth.session-token') || request.cookies.get('__Secure-next-auth.session-token')
+  // Use getToken for beta v5 compatible decoding since we added needsPasswordChange to jwt token
+  const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: request.url.startsWith('https://') ? '__Secure-authjs.session-token' : 'authjs.session-token'
+  })
 
-  const isLoggedIn = !!token
+  // Fallback for cookie names in dev
+  const fallbackToken = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+  })
+
+  const currentToken = token || fallbackToken
+  const isLoggedIn = !!currentToken
 
   if (isPublicRoute) {
     return NextResponse.next()
@@ -36,9 +44,13 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  // NOTE: Role-based edge protection requires decoding the JWT.
-  // NextAuth v5 edge wrapper is complex to setup without DB connections in beta.
-  // The pages and API routes still strictly verify the session and role using full Node runtime.
+  const needsPasswordChange = currentToken?.needsPasswordChange as boolean
+
+  // Force redirect to settings if password change is needed
+  if (needsPasswordChange && !request.nextUrl.pathname.startsWith('/settings') && !request.nextUrl.pathname.startsWith('/api/users/change-password')) {
+      return NextResponse.redirect(new URL('/settings?forceChange=true', request.url))
+  }
+
   return NextResponse.next()
 }
 
