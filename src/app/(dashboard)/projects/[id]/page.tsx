@@ -9,10 +9,14 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { isPast, startOfDay } from "date-fns";
 import toast from "react-hot-toast";
+
 import OverviewTab from "./components/OverviewTab";
 import RequirementsTab from "./components/RequirementsTab";
 import CredentialsTab from "./components/CredentialsTab";
 import TeamTab from "./components/TeamTab";
+import PaymentsTab from "./components/PaymentsTab";
+import DemosTab from "./components/DemosTab";
+import ActivityTab from "./components/ActivityTab";
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -46,8 +50,8 @@ export default function ProjectDetailPage() {
   };
 
   const getStatusBadge = (p: any) => {
-    const isOverdue = p.deadlineDate &&
-                      isPast(startOfDay(new Date(p.deadlineDate))) &&
+    const isOverdue = p.expectedDeliveryDate &&
+                      isPast(startOfDay(new Date(p.expectedDeliveryDate))) &&
                       (p.status === "ongoing" || p.status === "on hold");
 
     if (isOverdue) return <Badge variant="danger" className="text-sm">Overdue</Badge>;
@@ -72,15 +76,19 @@ export default function ProjectDetailPage() {
     <DashboardLayout>
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-3xl font-bold tracking-tight">{project.clientName}</h2>
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{project.clientName}</h2>
             {getStatusBadge(project)}
+            {project.payment?.paymentStatus === "fully_paid" ? <Badge variant="success">Fully Paid</Badge> :
+             project.payment?.paymentStatus === "partially_paid" ? <Badge variant="warning">Partially Paid</Badge> :
+             <Badge variant="danger">Unpaid</Badge>}
           </div>
-          <p className="text-muted-foreground">
-            {project.companyName} &bull; #{project.sNo} &bull; {project.typeOfJob}
+          <p className="text-sm md:text-base text-muted-foreground">
+            {project.companyName} &bull; #{project.sNo} &bull; {project.typeOfJob} &bull;
+            {project.payment?.currency === "USD" ? "$" : project.payment?.currency === "EUR" ? "€" : "₹"}{project.payment?.amountReceived || 0} / {project.payment?.currency === "USD" ? "$" : project.payment?.currency === "EUR" ? "€" : "₹"}{project.projectBudget}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto">
           {role === "admin" && (
             <Button variant="outline" onClick={() => {
               const newStatus = project.status === "completed" ? "ongoing" : "completed";
@@ -92,7 +100,7 @@ export default function ProjectDetailPage() {
                 toast.success(`Marked as ${newStatus}`);
                 fetchProject();
               });
-            }}>
+            }} className="whitespace-nowrap">
               Mark as {project.status === "completed" ? "Ongoing" : "Completed"}
             </Button>
           )}
@@ -100,29 +108,44 @@ export default function ProjectDetailPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6 w-full justify-start overflow-x-auto">
+        <TabsList className="mb-6 w-full justify-start overflow-x-auto whitespace-nowrap">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="requirements">Requirements</TabsTrigger>
-          {role !== "bde" && <TabsTrigger value="credentials">Credentials</TabsTrigger>}
+          <TabsTrigger value="demos">Demos</TabsTrigger>
+          {role !== "bde" && <TabsTrigger value="credentials">Credentials & Links</TabsTrigger>}
           <TabsTrigger value="team">Team & Shares</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           <OverviewTab project={project} refreshProject={fetchProject} />
         </TabsContent>
 
+        <TabsContent value="payments">
+          <PaymentsTab project={project} refreshProject={fetchProject} />
+        </TabsContent>
+
         <TabsContent value="requirements">
           <RequirementsTab projectId={project._id} project={project} />
         </TabsContent>
 
+        <TabsContent value="demos">
+          <DemosTab project={project} refreshProject={fetchProject} />
+        </TabsContent>
+
         {role !== "bde" && (
           <TabsContent value="credentials">
-            <CredentialsTab projectId={project._id} />
+            <CredentialsTab projectId={project._id} project={project} refreshProject={fetchProject} />
           </TabsContent>
         )}
 
         <TabsContent value="team">
           <TeamTab project={project} />
+        </TabsContent>
+
+        <TabsContent value="activity">
+          <ActivityTab projectId={project._id} />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

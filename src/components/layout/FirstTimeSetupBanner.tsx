@@ -1,21 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "../ui/Button";
 
 export function FirstTimeSetupBanner() {
+  const { data: session } = useSession();
   const [needsChange, setNeedsChange] = useState(false);
 
   useEffect(() => {
-    fetch("/api/auth/session")
-      .then(res => res.json())
-      .then(session => {
-        if (session?.user?.needsPasswordChange) {
-          setNeedsChange(true);
-        }
-      })
-      .catch(console.error);
-  }, []);
+    if (session?.user && (session.user as any).needsPasswordChange) {
+      setNeedsChange(true);
+    } else {
+      setNeedsChange(false);
+    }
+  }, [session]);
 
   if (!needsChange) return null;
 

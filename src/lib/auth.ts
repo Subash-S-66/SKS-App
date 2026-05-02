@@ -1,12 +1,12 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import LoginAttempt from "@/models/LoginAttempt";
 
 const MAX_ATTEMPTS = 5;
-const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+const LOCKOUT_DURATION = 15 * 60 * 1000;
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -23,47 +23,42 @@ export const authOptions: AuthOptions = {
 
         await dbConnect();
 
-        // Pass an IP to login attempts. In Next.js app router API route, req has a limited set of headers.
         const ipAddress = (req as any).headers?.["x-forwarded-for"] || "unknown-ip";
 
-        let attemptRecord = await LoginAttempt.findOne({ ipAddress });
+        let attemptRecord = await LoginAttempt.findOne({ ipAddress }).lean();
 
-        if (attemptRecord && attemptRecord.isLocked()) {
-          throw new Error(`Too many attempts. Try again in ${Math.ceil((attemptRecord.lockUntil!.getTime() - Date.now()) / 60000)} minutes.`);
+        if (attemptRecord && !!(attemptRecord.lockUntil && attemptRecord.lockUntil.getTime() > Date.now())) {
+          throw new Error(`Too many attempts. Try again in ${Math.ceil((attemptRecord.lockUntil.getTime() - Date.now()) / 60000)} minutes.`);
         }
 
-        const user = await User.findOne({ email: credentials.email.toLowerCase() });
+        const user = await User.findOne({ email: credentials.email.toLowerCase() }).select('+password').lean();
 
         if (!user || !user.isActive) {
-          // Record failed attempt
-          if (attemptRecord) {
-            attemptRecord.attempts += 1;
-            if (attemptRecord.attempts >= MAX_ATTEMPTS) {
-              attemptRecord.lockUntil = new Date(Date.now() + LOCKOUT_DURATION);
-            }
-            await attemptRecord.save();
-          } else {
-            await LoginAttempt.create({ ipAddress, attempts: 1 });
-          }
+          await LoginAttempt.updateOne(
+            { ipAddress },
+            {
+              $inc: { attempts: 1 },
+              $set: { lockUntil: attemptRecord?.attempts >= MAX_ATTEMPTS - 1 ? new Date(Date.now() + LOCKOUT_DURATION) : undefined }
+            },
+            { upsert: true }
+          );
           throw new Error("Invalid email or password");
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isValid) {
-          if (attemptRecord) {
-            attemptRecord.attempts += 1;
-            if (attemptRecord.attempts >= MAX_ATTEMPTS) {
-              attemptRecord.lockUntil = new Date(Date.now() + LOCKOUT_DURATION);
-            }
-            await attemptRecord.save();
-          } else {
-            await LoginAttempt.create({ ipAddress, attempts: 1 });
-          }
+          await LoginAttempt.updateOne(
+            { ipAddress },
+            {
+              $inc: { attempts: 1 },
+              $set: { lockUntil: attemptRecord?.attempts >= MAX_ATTEMPTS - 1 ? new Date(Date.now() + LOCKOUT_DURATION) : undefined }
+            },
+            { upsert: true }
+          );
           throw new Error("Invalid email or password");
         }
 
-        // Reset attempts on successful login
         if (attemptRecord) {
           await LoginAttempt.deleteOne({ ipAddress });
         }
@@ -86,7 +81,6 @@ export const authOptions: AuthOptions = {
         token.needsPasswordChange = (user as any).needsPasswordChange;
       }
 
-      // Update token when password change is detected
       if (trigger === "update" && session?.needsPasswordChange === false) {
         token.needsPasswordChange = false;
       }
@@ -107,7 +101,7 @@ export const authOptions: AuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 8 * 60 * 60, // 8 hours as requested
+    maxAge: 8 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET || "fallback_secret_for_dev_only",
 };
