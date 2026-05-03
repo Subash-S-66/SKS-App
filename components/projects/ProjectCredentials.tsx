@@ -104,6 +104,8 @@ export function ProjectCredentials({ projectId, projectLinks, onUpdate }: { proj
   if (loading) return <div>Loading...</div>;
 
   const isAdmin = session?.user?.role === "admin";
+  const isDeveloper = session?.user?.role === "developer";
+  const canEditLinks = isAdmin || isDeveloper;
   const hasCreds = !!credentials;
 
   return (
@@ -112,7 +114,7 @@ export function ProjectCredentials({ projectId, projectLinks, onUpdate }: { proj
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-semibold flex items-center"><LinkIcon className="w-5 h-5 mr-2" /> Project Links</h3>
-          {isAdmin && (
+          {canEditLinks && (
             <Dialog open={isLinkEditOpen} onOpenChange={setIsLinkEditOpen}>
               <DialogTrigger>
                 <Button variant="outline" size="sm">
@@ -195,7 +197,7 @@ export function ProjectCredentials({ projectId, projectLinks, onUpdate }: { proj
                 <Eye className="w-4 h-4 mr-2" /> Reveal Passwords
               </Button>
             )}
-            {isAdmin && (
+            {canEditLinks && (
               <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                 <DialogTrigger>
                   <Button size="sm">

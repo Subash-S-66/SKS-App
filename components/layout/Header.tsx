@@ -129,14 +129,12 @@ export default function Header() {
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:w-10 rounded-full p-0">
-              <Avatar className="h-9 w-9 md:h-10 md:w-10">
-                <AvatarFallback className="bg-blue-600 text-white text-sm">
-                  {session?.user?.name?.[0]?.toUpperCase() || <User size={18} />}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
+          <DropdownMenuTrigger className="relative h-9 w-9 md:h-10 md:w-10 rounded-full p-0 flex items-center justify-center bg-transparent border-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <Avatar className="h-9 w-9 md:h-10 md:w-10">
+              <AvatarFallback className="bg-blue-600 text-white text-sm">
+                {session?.user?.name?.[0]?.toUpperCase() || <User size={18} />}
+              </AvatarFallback>
+            </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end">
             <DropdownMenuLabel className="font-normal">

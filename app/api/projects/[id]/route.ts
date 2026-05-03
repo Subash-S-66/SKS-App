@@ -52,7 +52,7 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "admin") {
+    if (!session) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
