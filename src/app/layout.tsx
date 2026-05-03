@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   title: "SKS Agency | Project Management",
   description: "Full-stack project management web application for SKS Agency",
+  icons: {
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 export default function RootLayout({

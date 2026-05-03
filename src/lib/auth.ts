@@ -63,6 +63,7 @@ export const authOptions: AuthOptions = {
           await LoginAttempt.deleteOne({ ipAddress });
         }
 
+        // Return a plain object, do not return mongoose document to avoid client-side JSON serialization issues
         return {
           id: user._id.toString(),
           name: user.name,
