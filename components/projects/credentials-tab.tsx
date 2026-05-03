@@ -125,12 +125,14 @@ export function CredentialsTab({ projectId }: { projectId: string }) {
         <h3 className="text-lg font-medium">Access & Credentials</h3>
         {isAdmin && (
           <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-            <DialogTrigger>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+
+
+              <Button onClick={() => setOpenEdit(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
                 {credentials ? "Edit Credentials" : "Add Credentials"}
               </Button>
-            </DialogTrigger>
-            <DialogContent className="w-full sm:max-w-[700px] w-11/12 bg-slate-900 text-white border-slate-800 ">
+
+
+            <DialogContent className="w-full w-[95vw] max-w-[95vw] sm:w-full sm:max-w-[700px] mx-auto w-11/12 bg-slate-900 text-white border-slate-800 ">
               <DialogHeader>
                 <DialogTitle>{credentials ? "Edit" : "Add"} Project Credentials</DialogTitle>
               </DialogHeader>

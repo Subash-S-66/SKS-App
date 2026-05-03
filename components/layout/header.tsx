@@ -35,12 +35,14 @@ export function Header({ role }: { role?: string }) {
     <header className="sticky top-0 z-30 flex h-14 min-h-[56px] items-center gap-4 border-b border-slate-800 bg-slate-950 px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <div className="flex sm:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger>
-            <Button variant="outline" size="icon" className="shrink-0 min-h-[44px] min-w-[44px] text-slate-400 border-slate-800 bg-slate-900">
+
+
+            <Button onClick={() => setOpen(true)} variant="outline" size="icon" className="shrink-0 min-h-[44px] min-w-[44px] text-slate-400 border-slate-800 bg-slate-900">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
-          </SheetTrigger>
+
+
           <SheetContent side="left" className="w-[280px] bg-slate-950 border-r border-slate-800 p-0 text-white flex flex-col">
              <div className="sr-only">
                <SheetTitle>Navigation Menu</SheetTitle>

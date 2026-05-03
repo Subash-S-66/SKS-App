@@ -14,7 +14,7 @@ import { Video, CalendarDays, User, ExternalLink, CheckCircle } from "lucide-rea
 
 export function DemosTab({ project, onUpdate }: { project: any, onUpdate: (p: any) => void }) {
   const { data: session } = useSession()
-  const canEdit = session?.user?.role === "admin" || session?.user?.role === "bde"
+  const canEdit = !!session?.user
 
   const [open, setOpen] = useState(false)
 
@@ -78,12 +78,14 @@ export function DemosTab({ project, onUpdate }: { project: any, onUpdate: (p: an
         <h3 className="text-lg font-medium">Client Demos & Feedback</h3>
         {canEdit && (
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger>
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px]">
+
+
+                    <Button onClick={() => setOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px]">
                         Record Demo
                     </Button>
-                </DialogTrigger>
-                <DialogContent className="w-full sm:max-w-[600px]  bg-slate-900 text-white border-slate-800">
+
+
+                <DialogContent className="w-full w-[95vw] max-w-[95vw] sm:w-full sm:max-w-[600px] mx-auto  bg-slate-900 text-white border-slate-800">
                     <DialogHeader>
                         <DialogTitle>Record Demo Session</DialogTitle>
                     </DialogHeader>

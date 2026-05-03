@@ -233,12 +233,14 @@ export function PaymentsTab({ project, onUpdate }: { project: any, onUpdate: (p:
                 <CardTitle className="text-lg">Transaction History</CardTitle>
                 {isAdmin && (
                     <Dialog open={openPayment} onOpenChange={setOpenPayment}>
-                        <DialogTrigger>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+
+
+                            <Button onClick={() => setOpenPayment(true)} size="sm" className="bg-green-600 hover:bg-green-700 text-white">
                                 Add Payment
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent className="w-full sm:max-w-[500px] bg-slate-900 text-white border-slate-800">
+
+
+                        <DialogContent className="w-full w-[95vw] max-w-[95vw] sm:w-full sm:max-w-[500px] mx-auto bg-slate-900 text-white border-slate-800">
                             <DialogHeader>
                                 <DialogTitle>Record Payment Received</DialogTitle>
                             </DialogHeader>
@@ -314,7 +316,7 @@ export function PaymentsTab({ project, onUpdate }: { project: any, onUpdate: (p:
 
       {/* Settlement Modal */}
       <Dialog open={openSettlement} onOpenChange={setOpenSettlement}>
-        <DialogContent className="w-full sm:max-w-[400px] bg-slate-900 text-white border-slate-800">
+        <DialogContent className="w-full w-[95vw] max-w-[95vw] sm:w-full sm:max-w-[400px] mx-auto bg-slate-900 text-white border-slate-800">
             <DialogHeader>
                 <DialogTitle>Mark Settlement for {selectedUser?.name}</DialogTitle>
             </DialogHeader>

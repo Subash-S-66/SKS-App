@@ -11,7 +11,7 @@ import { Link2, Globe, HardDrive, Copy, ExternalLink, Plus, Trash2, LayoutDashbo
 
 export function LinksSection({ project, onUpdate }: { project: any, onUpdate: (p: any) => void }) {
   const { data: session } = useSession()
-  const isAdmin = session?.user?.role === "admin"
+  const canEdit = session?.user?.role === "admin" || session?.user?.role === "developer"
 
   const [open, setOpen] = useState(false)
   const [links, setLinks] = useState(project.links || {
@@ -62,14 +62,16 @@ export function LinksSection({ project, onUpdate }: { project: any, onUpdate: (p
     <div className="space-y-6 mt-8">
       <div className="flex justify-between items-center border-t border-slate-800 pt-8">
         <h3 className="text-lg font-medium">Project Links & Resources</h3>
-        {isAdmin && (
+        {canEdit && (
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger>
-                    <Button variant="outline" className="border-slate-700 text-white bg-slate-900 hover:bg-slate-800 min-h-[44px]">
+
+
+                    <Button onClick={() => setOpen(true)} variant="outline" className="border-slate-700 text-white bg-slate-900 hover:bg-slate-800 min-h-[44px]">
                         Manage Links
                     </Button>
-                </DialogTrigger>
-                <DialogContent className="w-full sm:max-w-[600px]  bg-slate-900 text-white border-slate-800">
+
+
+                <DialogContent className="w-full w-[95vw] max-w-[95vw] sm:w-full sm:max-w-[600px] mx-auto  bg-slate-900 text-white border-slate-800">
                     <DialogHeader>
                         <DialogTitle>Project Links</DialogTitle>
                     </DialogHeader>

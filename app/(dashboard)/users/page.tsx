@@ -97,10 +97,12 @@ export default function UsersPage() {
           <p className="text-muted-foreground text-slate-400">Manage team members and their roles.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px]">Add User</Button>
-          </DialogTrigger>
-          <DialogContent className="w-full sm:max-w-[425px] bg-slate-900 text-white border-slate-800">
+
+
+            <Button onClick={() => setOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px]">Add User</Button>
+
+
+          <DialogContent className="w-full w-[95vw] max-w-[95vw] sm:w-full sm:max-w-[425px] mx-auto bg-slate-900 text-white border-slate-800">
             <DialogHeader>
               <DialogTitle>Create New User</DialogTitle>
             </DialogHeader>

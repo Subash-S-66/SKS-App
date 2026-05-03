@@ -112,10 +112,12 @@ export function RequirementsTab({ projectId }: { projectId: string }) {
         <h3 className="text-lg font-medium">Project Requirements</h3>
         {isDeveloperOrAdmin && (
           <Dialog open={openNew} onOpenChange={setOpenNew}>
-            <DialogTrigger>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Add Requirement</Button>
-            </DialogTrigger>
-            <DialogContent className="w-full sm:max-w-[500px] bg-slate-900 text-white border-slate-800">
+
+
+              <Button onClick={() => setOpenNew(true)} className="bg-blue-600 hover:bg-blue-700 text-white">Add Requirement</Button>
+
+
+            <DialogContent className="w-full w-[95vw] max-w-[95vw] sm:w-full sm:max-w-[500px] mx-auto bg-slate-900 text-white border-slate-800">
               <DialogHeader>
                 <DialogTitle>New Requirement</DialogTitle>
               </DialogHeader>
