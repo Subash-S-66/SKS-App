@@ -7,7 +7,11 @@ export function Toaster() {
     <HotToaster
       position="top-right"
       toastOptions={{
-        className: "!bg-secondary !text-white !border !border-border",
+        style: {
+          background: "var(--secondary)",
+          color: "var(--foreground)",
+          border: "1px solid var(--border)",
+        },
         success: {
           iconTheme: {
             primary: "var(--success)",

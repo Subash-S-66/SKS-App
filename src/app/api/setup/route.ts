@@ -9,11 +9,16 @@ export async function GET() {
   try {
     await dbConnect();
 
-    // Check if any admin exists
     const adminExists = await User.findOne({ role: "admin" });
 
     if (adminExists) {
-      return NextResponse.json({ message: "Admin already exists. Setup skipped." }, { status: 200 });
+      // Just in case the password was hashed wrong with the previous bcrypt module, let's reset it here temporarily
+      const hashedPassword = await bcrypt.hash("SKSAdmin@2024", 12);
+      adminExists.password = hashedPassword;
+      adminExists.needsPasswordChange = true;
+      await adminExists.save();
+
+      return NextResponse.json({ message: "Admin already exists. Password reset for safety." }, { status: 200 });
     }
 
     // Create default admin
@@ -22,7 +27,7 @@ export async function GET() {
     await User.create({
       name: "Super Admin",
       username: "admin",
-      email: "admin@sksagency.com", // dummy email
+      email: "admin@sksagency.com",
       password: hashedPassword,
       role: "admin",
       needsPasswordChange: true,
